@@ -1,0 +1,19 @@
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #F7F2EE;
+}
+
+.main {
+  flex: 1;
+  padding: 28px 36px;
+}
+
+.wardrobe-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  max-width: 1400px;
+  margin: 0 auto;
+}

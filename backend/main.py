@@ -88,12 +88,16 @@ def generate_outfit(vibe: str, gender: str, db: Session = Depends(get_db)):
         ).all()
         return random.choice(items) if items else None
 
-    outfit = {
-        "top": pick("Top"),
-        "bottom": pick("Bottom"),
-        "shoes": pick("Shoes"),
-        "outerwear": pick("Outerwear"),
-    }
+    # Female: randomly pick outfit A (Top+Bottom+Shoes) or B (Dress+Shoes)
+    if gender == "Female":
+        use_dress = random.choice([True, False])
+        if use_dress:
+            outfit = { "dress": pick("Dress"), "shoes": pick("Shoes") }
+        else:
+            outfit = { "top": pick("Top"), "bottom": pick("Bottom"), "shoes": pick("Shoes") }
+    else:
+        # Male or Unisex: always Top + Bottom + Shoes
+        outfit = { "top": pick("Top"), "bottom": pick("Bottom"), "shoes": pick("Shoes") }
 
     if not any(outfit.values()):
         raise HTTPException(status_code=404, detail="No items found for this vibe and gender")

@@ -1,0 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Jost:wght@300;400;500&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: 'Jost', sans-serif;
+  font-weight: 300;
+  background: #EDE5DE;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}

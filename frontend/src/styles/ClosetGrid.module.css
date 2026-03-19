@@ -1,0 +1,175 @@
+.gridWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  align-content: start;
+}
+
+.card {
+  background: #fff;
+  border: 1.5px solid #E0B8C8;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(180,100,130,0.10);
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 14px 32px rgba(180,100,130,0.20);
+  border-color: #C878A0;
+}
+
+.cardImage {
+  width: 100%;
+  aspect-ratio: 3/4;
+  object-fit: cover;
+  display: block;
+}
+
+.cardInfo {
+  padding: 14px 14px 16px;
+  border-top: 1px solid #F0D8E4;
+  background: linear-gradient(170deg, #fff 0%, #FDF5F8 100%);
+}
+
+.cardName {
+  font-family: 'Jost', sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  color: #3A3530;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardBadges {
+  display: flex;
+  gap: 5px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  font-size: 10px;
+  font-family: 'Jost', sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: #FDEEF3;
+  color: #C8607A;
+  border: 1px solid #F0C8D8;
+}
+
+.filterRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.filterDivider {
+  width: 1px;
+  height: 20px;
+  background: #D4A8B8;
+  margin: 0 6px;
+}
+
+.filterLabel {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9A6878;
+  font-weight: 500;
+  margin-right: 6px;
+}
+
+.filterPill {
+  font-family: 'Jost', sans-serif;
+  font-size: 13px;
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: 1.5px solid #D4A8B8;
+  color: #7A5068;
+  background: transparent;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: all 0.15s;
+}
+
+.filterPill:hover {
+  background: #FDEEF3;
+  border-color: #C8607A;
+  color: #C8607A;
+}
+
+.filterPillActive {
+  background: linear-gradient(135deg, #C8607A 0%, #A858B8 100%);
+  border-color: transparent;
+  color: #fff;
+  font-weight: 500;
+}
+
+.deleteBtn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid #E0B8C8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 10px;
+  color: #C8607A;
+  opacity: 0;
+  transition: opacity 0.15s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.card:hover .deleteBtn {
+  opacity: 1;
+}
+
+.empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 400px;
+}
+
+.emptyIcon {
+  font-size: 52px;
+  opacity: 0.35;
+}
+
+.emptyText {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-style: italic;
+  font-weight: 300;
+  color: #C4A0B0;
+}
+
+.emptySubtext {
+  font-size: 13px;
+  color: #D4B8C4;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
