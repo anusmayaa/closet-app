@@ -34,7 +34,7 @@ app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 def get_items(vibe: str = None, gender: str = None, db: Session = Depends(get_db)):
     query = db.query(ClothingItem)
     if vibe:
-        query = query.filter(ClothingItem.vibe == vibe)
+        query = query.filter(ClothingItem.vibe.contains(vibe))
     if gender:
         query = query.filter(ClothingItem.gender.in_([gender, "Unisex"]))
     return query.all()
@@ -80,29 +80,38 @@ def delete_item(item_id: int, db: Session = Depends(get_db)):
 
 @app.get("/generate-outfit")
 def generate_outfit(vibe: str, gender: str, db: Session = Depends(get_db)):
-    def pick(category):
+    def get(category):
         items = db.query(ClothingItem).filter(
-            ClothingItem.vibe == vibe,
+            ClothingItem.vibe.contains(vibe),
             ClothingItem.category == category,
             ClothingItem.gender.in_([gender, "Unisex"])
         ).all()
         return random.choice(items) if items else None
 
-    # Female: randomly pick outfit A (Top+Bottom+Shoes) or B (Dress+Shoes)
+    def has(category):
+        return db.query(ClothingItem).filter(
+            ClothingItem.vibe.contains(vibe),
+            ClothingItem.category == category,
+            ClothingItem.gender.in_([gender, "Unisex"])
+        ).count() > 0
+
     if gender == "Female":
-        use_dress = random.choice([True, False])
-        if use_dress:
-            outfit = { "dress": pick("Dress"), "shoes": pick("Shoes") }
+        option_a = has("Top") and has("Bottom") and has("Shoes")
+        option_b = has("Dress") and has("Shoes")
+        if not option_a and not option_b:
+            raise HTTPException(status_code=404, detail="Add more clothes to generate this look")
+        if option_a and option_b:
+            use_dress = random.choice([True, False])
         else:
-            outfit = { "top": pick("Top"), "bottom": pick("Bottom"), "shoes": pick("Shoes") }
+            use_dress = option_b
+        if use_dress:
+            return { "dress": get("Dress"), "shoes": get("Shoes") }
+        else:
+            return { "top": get("Top"), "bottom": get("Bottom"), "shoes": get("Shoes") }
     else:
-        # Male or Unisex: always Top + Bottom + Shoes
-        outfit = { "top": pick("Top"), "bottom": pick("Bottom"), "shoes": pick("Shoes") }
-
-    if not any(outfit.values()):
-        raise HTTPException(status_code=404, detail="No items found for this vibe and gender")
-
-    return outfit
+        if not (has("Top") and has("Bottom") and has("Shoes")):
+            raise HTTPException(status_code=404, detail="Add more clothes to generate this look")
+        return { "top": get("Top"), "bottom": get("Bottom"), "shoes": get("Shoes") }
 
 # ─── LOOKBOOK / SAVED OUTFITS ─────────────────────────────────
 

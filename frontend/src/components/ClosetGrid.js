@@ -23,7 +23,7 @@ const ClosetGrid = ({ refresh }) => {
   };
 
   const filtered = items
-    .filter(i => filter === 'All' || i.vibe === filter)
+    .filter(i => filter === 'All' || i.vibe.split(',').map(v => v.trim()).includes(filter))
     .filter(i => genderFilter === 'All' || i.gender === genderFilter);
 
   return (
@@ -64,7 +64,9 @@ const ClosetGrid = ({ refresh }) => {
                 <p className={styles.cardName}>{item.name}</p>
                 <div className={styles.cardBadges}>
                   <span className={styles.badge}>{item.category}</span>
-                  <span className={styles.badge}>{item.vibe}</span>
+                  {item.vibe.split(',').map(v => (
+                    <span key={v} className={styles.badge}>{v.trim()}</span>
+                  ))}
                   <span className={styles.badge}>{item.gender}</span>
                 </div>
               </div>

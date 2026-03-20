@@ -8,7 +8,7 @@ const GENDERS = ['Male', 'Female', 'Unisex'];
 const UploadForm = ({ onUploadSuccess }) => {
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
-  const [vibe, setVibe] = useState('');
+  const [vibes, setVibes] = useState([]);
   const [gender, setGender] = useState('');
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -24,7 +24,7 @@ const UploadForm = ({ onUploadSuccess }) => {
   };
 
   const handleSubmit = async () => {
-    if (!name || !category || !vibe || !gender || !file) {
+    if (!name || !category || vibes.length === 0 || !gender || !file) {
       setError('Please fill in all fields and select an image.');
       return;
     }
@@ -34,7 +34,7 @@ const UploadForm = ({ onUploadSuccess }) => {
     const formData = new FormData();
     formData.append('name', name);
     formData.append('category', category);
-    formData.append('vibe', vibe);
+    formData.append('vibe', vibes.join(','));
     formData.append('gender', gender);
     formData.append('file', file);
 
@@ -49,7 +49,7 @@ const UploadForm = ({ onUploadSuccess }) => {
       if (res.ok) {
         setName('');
         setCategory('');
-        setVibe('');
+        setVibes([]);
         setGender('');
         setFile(null);
         setPreview(null);
@@ -118,8 +118,8 @@ const UploadForm = ({ onUploadSuccess }) => {
           {VIBES.map(v => (
             <button
               key={v}
-              className={`${styles.pill} ${vibe === v ? styles.pillActive : ''}`}
-              onClick={() => setVibe(v)}
+              className={`${styles.pill} ${vibes.includes(v) ? styles.pillActive : ''}`}
+              onClick={() => setVibes(prev => prev.includes(v) ? prev.filter(x => x !== v) : [...prev, v])}
             >
               {v}
             </button>
