@@ -1,6 +1,7 @@
 import os
 import random
 import shutil
+import uuid
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -49,11 +50,13 @@ async def create_item(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
-    file_path = f"{UPLOAD_DIR}/{file.filename}"
+    ext = os.path.splitext(file.filename)[1]
+    unique_name = f"{uuid.uuid4().hex}{ext}"
+    file_path = f"{UPLOAD_DIR}/{unique_name}"
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    img_url = f"/uploads/{file.filename}"
+    img_url = f"/uploads/{unique_name}"
     item = ClothingItem(name=name, category=category, vibe=vibe, gender=gender, img_url=img_url)
     db.add(item)
     db.commit()
@@ -117,7 +120,21 @@ def generate_outfit(vibe: str, gender: str, db: Session = Depends(get_db)):
 
 @app.get("/outfits")
 def get_outfits(db: Session = Depends(get_db)):
-    return db.query(SavedOutfit).all()
+    outfits = db.query(SavedOutfit).all()
+    return [
+        {
+            "id": o.id,
+            "name": o.name,
+            "vibe": o.vibe,
+            "gender": o.gender,
+            "items": [
+                {"id": i.id, "name": i.name, "category": i.category,
+                 "vibe": i.vibe, "gender": i.gender, "img_url": i.img_url}
+                for i in o.items
+            ],
+        }
+        for o in outfits
+    ]
 
 
 @app.post("/outfits")
@@ -125,12 +142,13 @@ def save_outfit(
     name: str = Form(...),
     vibe: str = Form(...),
     item_ids: str = Form(...),
+    gender: str = Form(...),
     db: Session = Depends(get_db),
 ):
     ids = [int(i) for i in item_ids.split(",") if i]
     items = db.query(ClothingItem).filter(ClothingItem.id.in_(ids)).all()
 
-    outfit = SavedOutfit(name=name, vibe=vibe, items=items)
+    outfit = SavedOutfit(name=name, vibe=vibe, gender=gender, items=items)
     db.add(outfit)
     db.commit()
     db.refresh(outfit)

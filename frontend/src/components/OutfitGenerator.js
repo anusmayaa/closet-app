@@ -9,7 +9,7 @@ const VIBES = [
 ];
 const GENDERS = ['Male', 'Female', 'Unisex'];
 
-const OutfitGenerator = () => {
+const OutfitGenerator = ({ onSave }) => {
   const [gender, setGender] = useState('');
   const [vibe, setVibe] = useState('');
   const [outfit, setOutfit] = useState(null);
@@ -36,7 +36,7 @@ const OutfitGenerator = () => {
     formData.append('gender', gender);
     formData.append('item_ids', items.map(i => i.id).join(','));
     const res = await fetch('/outfits', { method: 'POST', body: formData });
-    if (res.ok) setSaved(true);
+    if (res.ok) { setSaved(true); onSave?.(); }
   };
 
   const outfitItems = outfit ? Object.entries(outfit).filter(([, v]) => v !== null) : [];

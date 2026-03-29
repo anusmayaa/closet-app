@@ -10,9 +10,7 @@ function App() {
   const [activePage, setActivePage] = useState('wardrobe');
   const [refreshGrid, setRefreshGrid] = useState(false);
 
-  const handleUploadSuccess = () => {
-    setRefreshGrid(prev => !prev);
-  };
+  const handleUploadSuccess = () => setRefreshGrid(prev => !prev);
 
   return (
     <div className="app">
@@ -27,11 +25,11 @@ function App() {
         )}
 
         {activePage === 'generator' && (
-          <OutfitGenerator />
+          <OutfitGenerator onSave={() => {}} />
         )}
 
         {activePage === 'lookbook' && (
-          <Lookbook />
+          <Lookbook onDelete={() => {}} />
         )}
       </main>
     </div>
