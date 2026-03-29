@@ -12,6 +12,13 @@
   position: sticky;
   top: 100px;
 }
+
+@media (max-width: 768px) {
+  .form {
+    width: 100%;
+    position: static;
+  }
+}
 .title {
   font-family: 'Cormorant Garamond', serif;
   font-size: 22px;

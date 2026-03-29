@@ -280,3 +280,18 @@
   text-align: center;
   padding: 60px 0;
 }
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filterRow {
+    gap: 5px;
+  }
+
+  .filterPill {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}

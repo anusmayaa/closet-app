@@ -239,6 +239,38 @@
   display: flex;
   flex-direction: row;
   gap: 14px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #E0B8C8 transparent;
+}
+
+.outfitRow::-webkit-scrollbar {
+  height: 4px;
+}
+
+.outfitRow::-webkit-scrollbar-thumb {
+  background: #E0B8C8;
+  border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .controls {
+    width: 100%;
+    position: static;
+  }
+
+  .outfitCard {
+    width: 160px;
+  }
+
+  .saveBtn {
+    align-self: stretch;
+    text-align: center;
+  }
 }
 
 .outfitCard {
