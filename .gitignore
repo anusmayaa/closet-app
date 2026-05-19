@@ -14,3 +14,10 @@ venv/
 
 # Logs
 *.log
+
+# Database
+backend/closet.db
+
+# Uploaded images
+backend/uploads/*
+!backend/uploads/.gitkeep

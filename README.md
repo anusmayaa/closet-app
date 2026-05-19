@@ -12,7 +12,11 @@ A personal wardrobe management app that lets you catalogue your clothing, genera
 - Delete items from your wardrobe
 
 **Outfit Generator**
-- Select a gender and vibe to randomly generate an outfit from your wardrobe
+- Select a gender and vibe to generate a color-balanced outfit from your wardrobe
+- Automatically detects the dominant color of each clothing item from its photo
+- Applies basic color theory — at most one bold-colored item per outfit
+- Bold colors: red, pink, orange, yellow, purple, green, blue
+- Neutral colors: white, black, grey, beige, navy, brown
 - Supports dress-based and top/bottom/shoes combinations for female outfits
 - Save generated outfits directly to your lookbook
 
@@ -38,10 +42,10 @@ A personal wardrobe management app that lets you catalogue your clothing, genera
 ```
 closet-app/
 ├── backend/
-│   ├── main.py          # API routes
+│   ├── main.py          # API routes + color detection + outfit logic
 │   ├── models.py        # Database models
 │   ├── database.py      # DB connection and session
-│   ├── uploads/         # Uploaded clothing images
+│   ├── uploads/         # Uploaded clothing images (not tracked in git)
 │   └── requirements.txt
 └── frontend/
     ├── src/
@@ -85,15 +89,15 @@ The app will open at `http://localhost:3000`. Requests to the backend are proxie
 
 ## API Endpoints
 
-| Method | Endpoint               | Description              |
-|--------|------------------------|--------------------------|
-| GET    | /items                 | Get all clothing items   |
-| POST   | /items                 | Upload a new item        |
-| DELETE | /items/{id}            | Delete an item           |
-| GET    | /generate-outfit       | Generate a random outfit |
-| GET    | /outfits               | Get all saved outfits    |
-| POST   | /outfits               | Save an outfit           |
-| DELETE | /outfits/{id}          | Delete a saved outfit    |
+| Method | Endpoint               | Description                        |
+|--------|------------------------|------------------------------------|
+| GET    | /items                 | Get all clothing items             |
+| POST   | /items                 | Upload a new item                  |
+| DELETE | /items/{id}            | Delete an item                     |
+| GET    | /generate-outfit       | Generate a color-balanced outfit   |
+| GET    | /outfits               | Get all saved outfits              |
+| POST   | /outfits               | Save an outfit                     |
+| DELETE | /outfits/{id}          | Delete a saved outfit              |
 
 ---
 
@@ -102,3 +106,6 @@ The app will open at `http://localhost:3000`. Requests to the backend are proxie
 - Uploaded images are stored in `backend/uploads/` and served as static files
 - Each uploaded file is renamed with a UUID prefix to prevent filename collisions
 - The database is a local SQLite file at `backend/closet.db`
+- `backend/uploads/` and `backend/closet.db` are excluded from version control via `.gitignore`
+- Color is detected automatically from the uploaded image using `colorthief` — no user input required
+- If color detection fails for an image, the item defaults to neutral and will still appear in outfit generation
