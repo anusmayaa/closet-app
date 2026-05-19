@@ -2,6 +2,8 @@ import os
 import random
 import shutil
 import uuid
+import math
+from colorthief import ColorThief
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -57,7 +59,8 @@ async def create_item(
         shutil.copyfileobj(file.file, buffer)
 
     img_url = f"/uploads/{unique_name}"
-    item = ClothingItem(name=name, category=category, vibe=vibe, gender=gender, img_url=img_url)
+    color = detect_color(file_path)
+    item = ClothingItem(name=name, category=category, vibe=vibe, gender=gender, color=color, img_url=img_url)
     db.add(item)
     db.commit()
     db.refresh(item)
@@ -79,24 +82,91 @@ def delete_item(item_id: int, db: Session = Depends(get_db)):
     return {"message": "Item deleted"}
 
 
+# ─── COLOR DETECTION ─────────────────────────────────────────
+
+COLOR_REFERENCES = {
+    "red":    (160, 35,  45),
+    "pink":   (220, 120, 140),
+    "orange": (190, 100, 35),
+    "yellow": (200, 170, 80),
+    "purple": (100, 50,  110),
+    "green":  (10,  60,  50),
+    "blue":   (50,  90,  160),
+    "white":  (210, 210, 210),
+    "black":  (38,  33,  31),
+    "grey":   (120, 120, 120),
+    "beige":  (195, 175, 145),
+    "navy":   (20,  30,  80),
+    "brown":  (130, 80,  45),
+}
+
+BOLD_COLORS = {"red", "pink", "orange", "yellow", "purple", "green", "blue"}
+
+def rgb_distance(c1, c2):
+    return math.sqrt(sum((a - b) ** 2 for a, b in zip(c1, c2)))
+
+def detect_color(image_path: str) -> str:
+    try:
+        palette = ColorThief(image_path).get_palette(color_count=8, quality=1)
+        # exclude near-black shadows and near-white backgrounds
+        def is_shadow(rgb): return max(rgb) < 50 and (max(rgb) - min(rgb)) < 15
+        def is_background(rgb): return min(rgb) > 220
+        filtered = [c for c in palette if not is_shadow(c) and not is_background(c)]
+        candidates = filtered if filtered else palette
+        best_color, best_dist = "neutral", float("inf")
+        for rgb in candidates:
+            match = min(COLOR_REFERENCES, key=lambda n: rgb_distance(rgb, COLOR_REFERENCES[n]))
+            dist = rgb_distance(rgb, COLOR_REFERENCES[match])
+            if dist < best_dist:
+                best_dist = dist
+                best_color = match
+        return best_color
+    except Exception:
+        return "neutral"
+
+def is_bold(item) -> bool:
+    return item.color in BOLD_COLORS
+
+def boldness_score(item) -> float:
+    """Lower = closer to neutral. Used as fallback when no neutrals exist."""
+    ref = COLOR_REFERENCES.get(item.color, (128, 128, 128))
+    neutral_center = (128, 128, 128)
+    return rgb_distance(ref, neutral_center)
+
+def build_outfit(pools):
+    categories = list(pools.keys())
+    outfit = []
+    chosen = []
+
+    for cat in categories:
+        pool = pools[cat]
+        bold_chosen = any(is_bold(i) for i in chosen)
+        if bold_chosen:
+            neutrals = [i for i in pool if not is_bold(i)]
+            pick = random.choice(neutrals) if neutrals else min(pool, key=boldness_score)
+        else:
+            pick = random.choice(pool)
+        outfit.append((cat, pick))
+        chosen.append(pick)
+
+    return {cat.lower(): item for cat, item in outfit}
+
 # ─── OUTFIT GENERATOR ─────────────────────────────────────────
 
 @app.get("/generate-outfit")
 def generate_outfit(vibe: str, gender: str, db: Session = Depends(get_db)):
-    def get(category):
-        items = db.query(ClothingItem).filter(
-            ClothingItem.vibe.contains(vibe),
-            ClothingItem.category == category,
-            ClothingItem.gender.in_([gender, "Unisex"])
-        ).all()
-        return random.choice(items) if items else None
-
-    def has(category):
+    def pool(category):
         return db.query(ClothingItem).filter(
             ClothingItem.vibe.contains(vibe),
             ClothingItem.category == category,
             ClothingItem.gender.in_([gender, "Unisex"])
-        ).count() > 0
+        ).all()
+
+    def has(category):
+        return len(pool(category)) > 0
+
+    def get_pools(categories):
+        return {cat: pool(cat) for cat in categories}
 
     if gender == "Female":
         option_a = has("Top") and has("Bottom") and has("Shoes")
@@ -107,14 +177,11 @@ def generate_outfit(vibe: str, gender: str, db: Session = Depends(get_db)):
             use_dress = random.choice([True, False])
         else:
             use_dress = option_b
-        if use_dress:
-            return { "dress": get("Dress"), "shoes": get("Shoes") }
-        else:
-            return { "top": get("Top"), "bottom": get("Bottom"), "shoes": get("Shoes") }
+        return build_outfit(get_pools(["Dress", "Shoes"])) if use_dress else build_outfit(get_pools(["Top", "Bottom", "Shoes"]))
     else:
         if not (has("Top") and has("Bottom") and has("Shoes")):
             raise HTTPException(status_code=404, detail="Add more clothes to generate this look")
-        return { "top": get("Top"), "bottom": get("Bottom"), "shoes": get("Shoes") }
+        return build_outfit(get_pools(["Top", "Bottom", "Shoes"]))
 
 # ─── LOOKBOOK / SAVED OUTFITS ─────────────────────────────────
 

@@ -17,6 +17,7 @@ class ClothingItem(Base):
     category = Column(String, nullable=False)
     vibe = Column(String, nullable=False)
     gender = Column(String, nullable=False, default="Unisex")
+    color = Column(String, nullable=False, default="neutral")
     img_url = Column(String, nullable=False)
 
     outfits = relationship("SavedOutfit", secondary=saved_outfit_items, back_populates="items")
